@@ -137,13 +137,17 @@ a:hover{color:var(--teal-d)}
 
 /* Forms */
 .form{display:grid;gap:12px}
-.form label{display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:var(--ink)}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:var(--ink);min-width:0}
 .form input[type=text],.form input[type=email],.form input[type=tel],.form input[type=password],.form input[type=number],.form input[type=date],.form select,.form textarea{
-  padding:10px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:var(--surface);color:var(--ink)
+  width:100%;max-width:100%;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:var(--surface);color:var(--ink)
 }
 .form textarea{min-height:80px;resize:vertical}
-.form .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form .actions{display:flex;gap:10px;margin-top:6px}
+.form .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.form .grid2 > *{min-width:0}
+.form .actions{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+@media(max-width:480px){
+  .form .grid2{grid-template-columns:1fr}
+}
 
 /* Tables */
 table.table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:12px;overflow:hidden}

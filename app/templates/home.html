@@ -7,6 +7,13 @@
     🚢 {{ store.port_name if store else '福澳港' }}
     🕐 {{ store.open_hours if store else '07:00-22:00' }}
   </p>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:.9rem;opacity:.92">
+    <span>🕐 資料抓取時間：<strong id="lastUpdated">{{ last_updated|taipei if last_updated else '—' }}</strong></span>
+    <form method="post" action="{{ url_for('main.refresh') }}" style="margin:0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn ghost small" type="submit" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.4);color:#fff">⚡ 一鍵更新</button>
+    </form>
+  </div>
   <div class="hero-grid">
     <div class="hero-tile">
       <div class="label">今日天氣</div>

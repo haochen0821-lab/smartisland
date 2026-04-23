@@ -86,6 +86,13 @@ def create_app():
     from app.context import inject_globals
     app.context_processor(inject_globals)
 
+    from datetime import timedelta as _td
+    @app.template_filter('taipei')
+    def _to_taipei(dt, fmt='%Y-%m-%d %H:%M:%S'):
+        if not dt:
+            return '—'
+        return (dt + _td(hours=8)).strftime(fmt)
+
     @app.route('/healthz')
     def healthz():
         return {'status': 'ok'}, 200

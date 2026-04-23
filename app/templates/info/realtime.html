@@ -5,7 +5,7 @@
   <div>
     <h2 style="margin:0">🌊 離島實時情報</h2>
     <p class="muted small" style="margin:4px 0 0">
-      公開來源資料，每 30 分鐘自動快取一次。最後抓取：{{ external.fetched_at.strftime('%Y-%m-%d %H:%M') if external.fetched_at else '—' }}
+      馬祖 4 鄉鎮預報 + 海面預報，資料來源：中央氣象署 OpenData。每 30 分鐘自動快取。最後抓取：{{ external.fetched_at.strftime('%Y-%m-%d %H:%M') if external.fetched_at else '—' }}
     </p>
   </div>
   <form method="post" action="{{ url_for('info.realtime_refresh') }}">
@@ -14,42 +14,68 @@
   </form>
 </div>
 
-<div class="row" style="margin-top:14px">
-  <div class="card" style="flex:1 1 320px">
-    <h3>✈️ 鄰近機場觀測（METAR）</h3>
-    <p class="muted small">{{ external.metar.note }}</p>
-    {% for s in external.metar.stations %}
-      <div style="margin-bottom:12px">
-        <strong>{{ s.icao }}</strong> <span class="small muted">{{ s.desc }}</span>
-        <p class="small" style="margin:4px 0">{{ s.human }}</p>
-        <pre class="small muted" style="white-space:pre-wrap;margin:0;background:var(--surface-2);padding:6px;border-radius:6px">{{ s.raw }}</pre>
-      </div>
-    {% endfor %}
-    <p class="small muted">資料源：aviationweather.gov（無需金鑰）</p>
-  </div>
+<h3 style="margin-top:18px">🏝️ 馬祖各鄉鎮即時預報</h3>
+<div class="row">
+  {% for t in external.townships %}
+    <div class="card" style="flex:1 1 220px">
+      <h4 style="margin:0 0 6px">{{ t.name }}</h4>
+      {% if t.error %}
+        <p class="small muted">
+          {% if t.error == 'no_api_key' %}
+            尚未設定 CWA API Key
+          {% else %}
+            {{ t.error }}
+          {% endif %}
+        </p>
+      {% else %}
+        <div style="font-size:1.05rem">{{ t.weather or '—' }}</div>
+        <div class="small">
+          🌡 {{ t.min_temp }}–{{ t.max_temp }}°C
+          ｜☔ {{ t.rain_prob }}%
+          {% if t.wind %}｜💨 {{ t.wind }}{% endif %}
+        </div>
+        {% if t.desc %}<p class="small muted" style="margin:6px 0 0">{{ t.desc }}</p>{% endif %}
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
 
+<h3 style="margin-top:18px">🌊 海面預報（影響船班）</h3>
+<div class="row">
   <div class="card" style="flex:1 1 320px">
-    <h3>🌊 馬祖海面</h3>
+    <h4 style="margin:0 0 6px">馬祖海面</h4>
     {% if external.marine_matsu.error %}
-      <p class="muted small">尚未取得：{{ external.marine_matsu.error }}<br>
+      <p class="small muted">
         {% if external.marine_matsu.error == 'no_api_key' %}
-        請至 <a href="https://opendata.cwa.gov.tw" target="_blank">CWA OpenData</a> 申請 API Key 並寫入 <code>.env</code> 的 <code>CWA_API_KEY</code>。
+          尚未設定 CWA API Key（請於 .env 設 <code>CWA_API_KEY</code> 並重啟）
+        {% else %}
+          取不到資料：{{ external.marine_matsu.error }}
         {% endif %}
       </p>
     {% else %}
-      <ul>{% for it in external.marine_matsu.get('items', []) %}<li>{{ it.name }}：{{ it.value }}</li>{% endfor %}</ul>
+      <ul style="margin:0;padding-left:18px">
+        {% for it in external.marine_matsu.get('items', []) %}<li class="small">{{ it.name }}：{{ it.value }}</li>{% endfor %}
+      </ul>
     {% endif %}
-    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/NSea.html">↗ CWA 官方頁</a>
+    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/NSea.html" style="margin-top:8px">↗ CWA 官方頁</a>
   </div>
 
   <div class="card" style="flex:1 1 320px">
-    <h3>⚓ 台灣北部海面</h3>
+    <h4 style="margin:0 0 6px">台灣北部海面</h4>
     {% if external.marine_north.error %}
-      <p class="muted small">尚未取得：{{ external.marine_north.error }}</p>
+      <p class="small muted">
+        {% if external.marine_north.error == 'no_api_key' %}
+          尚未設定 CWA API Key
+        {% else %}
+          取不到資料：{{ external.marine_north.error }}
+        {% endif %}
+      </p>
     {% else %}
-      <ul>{% for it in external.marine_north.get('items', []) %}<li>{{ it.name }}：{{ it.value }}</li>{% endfor %}</ul>
+      <ul style="margin:0;padding-left:18px">
+        {% for it in external.marine_north.get('items', []) %}<li class="small">{{ it.name }}：{{ it.value }}</li>{% endfor %}
+      </ul>
     {% endif %}
-    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/FSea.html">↗ CWA 官方頁</a>
+    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/FSea.html" style="margin-top:8px">↗ CWA 官方頁</a>
   </div>
 </div>
 
