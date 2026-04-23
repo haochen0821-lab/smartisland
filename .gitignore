@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+instance/*.db
+app/static/uploads/pwa/icon-*.png
+app/static/uploads/pwa/icon-source.png
+app/static/uploads/pwa/apple-touch-icon-*.png
+app/static/uploads/pwa/favicon-*.png
+.venv/
+*.log
+.DS_Store

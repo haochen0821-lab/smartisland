@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>{{ store.name if store else 'Smart Island Hub' }}</h1>
+  <p class="meta">
+    📍 {{ store.location if store else '南竿介壽' }}
+    🚢 {{ store.port_name if store else '福澳港' }}
+    🕐 {{ store.open_hours if store else '07:00-22:00' }}
+  </p>
+  <div class="hero-grid">
+    <div class="hero-tile">
+      <div class="label">今日天氣</div>
+      <div class="val">
+        {% if weather %}
+          {{ weather.weather_desc or '—' }}　{{ weather.min_temp }}–{{ weather.max_temp }}°C
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="hero-tile">
+      <div class="label">風 / 雨</div>
+      <div class="val">
+        {% if weather %}
+          風 {{ weather.wind_level }} 級｜雨 {{ weather.rain_prob }}%
+        {% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="hero-tile">
+      <div class="label">船班</div>
+      <div class="val">
+        {% set arrived = ferries|selectattr('status','equalto','arrived')|list %}
+        {% set delayed = ferries|selectattr('status','equalto','delayed')|list %}
+        {{ arrived|length }} 已靠港 / {{ delayed|length }} 延誤
+      </div>
+    </div>
+    <div class="hero-tile">
+      <div class="label">資料來源</div>
+      <div class="val">{{ '⚠️ 天候警示' if weather_alert else '✅ 一切正常' }}</div>
+    </div>
+  </div>
+</section>
+
+<div class="row">
+  <div class="card" style="flex:1 1 320px">
+    <h3>🚢 今日 {{ store.port_name if store else '福澳港' }} 船班</h3>
+    {% if ferries %}
+      <ul class="ferries">
+        {% for f in ferries %}
+          <li class="ferry">
+            <div>
+              <strong>{{ f.ferry_name }}</strong>
+              <div class="small muted">
+                預計 {{ f.scheduled_time or '—' }}
+                {% if f.actual_time %}｜實際 {{ f.actual_time }}{% endif %}
+                ｜載貨率 {{ f.cargo_pct }}%
+              </div>
+              {% if f.note %}<div class="small muted">{{ f.note }}</div>{% endif %}
+            </div>
+            <span class="pill {{ f.status }}">{{ f.status_label }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">今日尚無船班排程。</p>
+    {% endif %}
+  </div>
+
+  {% if current_user.is_authenticated and is_customer %}
+    <div class="card" style="flex:1 1 320px">
+      <h3>⚡ 一鍵下單</h3>
+      <p class="muted small">挑一份你的常買組合，到店出示 QR 即可取貨。</p>
+      <a class="btn block" href="{{ url_for('combos.list_combos') }}">前往我的組合</a>
+    </div>
+  {% else %}
+    <div class="card" style="flex:1 1 320px">
+      <h3>👋 還沒有帳號？</h3>
+      <p class="muted small">註冊後可建立「常買組合」，一鍵下單、QR 取貨，省去排隊與東挑西選。</p>
+      <a class="btn block" href="{{ url_for('auth.register') }}">免費註冊</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if weather_alert %}
+  <div class="card" style="border-left:6px solid var(--red)">
+    <strong>⚠️ 天候警示：</strong>
+    {{ weather.alert_reason if weather else '' }}，部分依賴船班的生鮮可能延後補給。
+  </div>
+{% endif %}
+
+<h2 style="margin-top:24px">📦 物資燈號</h2>
+{% for g in grouped %}
+  {% if g['items'] %}
+  <section class="cat-section">
+    <h3 class="cat-title"><span class="ic">{{ g.category.icon }}</span>{{ g.category.name }}</h3>
+    <div class="lights">
+      {% for it in g['items'] %}
+        <div class="light">
+          <span class="dot {{ it.color }}"></span>
+          <span class="icon">{{ it.product.icon }}</span>
+          <div>
+            <div class="name">{{ it.product.name }}</div>
+            <div class="label">{{ it.label }}｜庫存 {{ it.product.stock }}{{ it.product.unit }}｜${{ it.product.price }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% endfor %}
+{% endblock %}

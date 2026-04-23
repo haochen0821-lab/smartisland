@@ -1,0 +1,54 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>🌤️ 天氣 / 海象</h2>
+
+<div class="card">
+  <h3>從中央氣象署拉取最新預報</h3>
+  {% if has_key %}
+    <p class="muted small">已偵測到 <code>CWA_API_KEY</code>，會用「鄉鎮天氣預報-連江縣 F-D0047-079」。</p>
+  {% else %}
+    <p class="flash flash-error" style="margin:0">尚未設定 <code>CWA_API_KEY</code>。請至 <a href="https://opendata.cwa.gov.tw" target="_blank">opendata.cwa.gov.tw</a> 申請後寫入 <code>.env</code> 並重啟容器。</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('admin.weather_refresh') }}" style="margin-top:10px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn">立刻更新</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>手動新增 / 覆寫一筆</h3>
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid2">
+      <label>天氣描述<input type="text" name="weather_desc" placeholder="例：多雲短暫陣雨"></label>
+      <label>降雨機率 (%)<input type="number" name="rain_prob" min="0" max="100" value="0"></label>
+    </div>
+    <div class="grid2">
+      <label>最低溫 °C<input type="number" name="min_temp" value="0"></label>
+      <label>最高溫 °C<input type="number" name="max_temp" value="0"></label>
+    </div>
+    <div class="grid2">
+      <label>蒲福風級 (0-12)<input type="number" name="wind_level" min="0" max="12" value="0"></label>
+      <label>浪高 (m)<input type="number" step="0.1" name="wave_height" value="0"></label>
+    </div>
+    <div class="actions"><button class="btn">新增</button></div>
+  </form>
+</div>
+
+<h3>歷史紀錄</h3>
+<table class="table">
+  <thead><tr><th>時間</th><th>描述</th><th>溫度</th><th>風 / 浪</th><th>雨</th><th>來源</th></tr></thead>
+  <tbody>
+    {% for s in snaps %}
+      <tr>
+        <td class="small">{{ s.observed_at.strftime('%m/%d %H:%M') }}</td>
+        <td>{{ s.weather_desc }}</td>
+        <td>{{ s.min_temp }}–{{ s.max_temp }}°C</td>
+        <td>{{ s.wind_level }} 級 / {{ s.wave_height }} m {% if s.is_alert %}<span class="tag" style="background:#fdecec;color:#7d2222">警示</span>{% endif %}</td>
+        <td>{{ s.rain_prob }}%</td>
+        <td>{{ s.source }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

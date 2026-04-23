@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}管理後台 ｜ {{ site_name }}{% endblock %}
+{% block content %}
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div style="font-weight:700;color:var(--teal-d);margin-bottom:8px">管理後台</div>
+    {% set p = request.path %}
+    <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if p == url_for('admin.dashboard') }}">📊 儀表板</a>
+    <a href="{{ url_for('admin.products') }}" class="{{ 'active' if p.startswith('/admin/products') }}">📦 商品 / 庫存</a>
+    <a href="{{ url_for('admin.ferries') }}" class="{{ 'active' if p.startswith('/admin/ferries') }}">🚢 船班</a>
+    <a href="{{ url_for('admin.weather') }}" class="{{ 'active' if p.startswith('/admin/weather') }}">🌤️ 天氣</a>
+    <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if p.startswith('/admin/orders') }}">📋 訂單</a>
+    <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if p.startswith('/admin/customers') }}">👥 顧客</a>
+    <a href="{{ url_for('admin.store') }}" class="{{ 'active' if p.startswith('/admin/store') }}">🏪 店家資訊</a>
+    <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if p.startswith('/admin/settings') }}">⚙️ 設定 / PWA</a>
+    <hr style="border:0;border-top:1px solid var(--line);margin:10px 0">
+    <a href="{{ url_for('main.home') }}">↗ 顧客首頁</a>
+    <a href="{{ url_for('board.board') }}" target="_blank">↗ 看板</a>
+    <a href="{{ url_for('admin.logout') }}" class="muted">登出</a>
+  </aside>
+  <section class="admin-content">
+    {% block admin_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

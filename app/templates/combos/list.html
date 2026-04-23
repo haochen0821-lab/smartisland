@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}我的常買組合{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+  <h2 style="margin:0">🛒 我的常買組合</h2>
+  <a class="btn" href="{{ url_for('combos.new_combo') }}">＋ 新增組合</a>
+</div>
+
+{% if my %}
+  {% for c in my %}
+    <div class="combo">
+      <div class="left">
+        <span class="ic">{{ c.icon }}</span>
+        <div>
+          <div class="name">{{ c.name }}</div>
+          <div class="desc">{{ c.description }}</div>
+          <div class="small muted">
+            {{ c.items|length }} 項｜小計 ${{ c.total_price }}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <form method="post" action="{{ url_for('orders.place_from_combo', combo_id=c.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn">⚡ 一鍵下單</button>
+        </form>
+        <form method="post" action="{{ url_for('combos.delete_combo', combo_id=c.id) }}"
+              onsubmit="return confirm('刪除「{{ c.name }}」？')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn ghost small">刪除</button>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="card"><p class="muted">你還沒有常買組合，可以從下面的範本快速複製，或自己建一份。</p></div>
+{% endif %}
+
+<h3 style="margin-top:24px">店家提供的範本</h3>
+{% for c in templates %}
+  <div class="combo">
+    <div class="left">
+      <span class="ic">{{ c.icon }}</span>
+      <div>
+        <div class="name">{{ c.name }}</div>
+        <div class="desc">{{ c.description }}</div>
+        <div class="small muted">
+          {% for it in c.items %}{{ it.product.icon }}{{ it.product.name }} × {{ it.quantity }}{% if not loop.last %}、{% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+    <form method="post" action="{{ url_for('combos.clone_template', combo_id=c.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn ghost">＋ 加入我的</button>
+    </form>
+  </div>
+{% endfor %}
+{% endblock %}

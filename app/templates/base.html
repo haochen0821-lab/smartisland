@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover">
+  <title>{% block title %}{{ site_name }}{% endblock %}</title>
+  <meta name="description" content="{{ site_tagline }}">
+  <meta name="theme-color" content="{{ theme_color }}">
+  <link rel="manifest" href="{{ url_for('pwa.manifest') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/pwa/apple-touch-icon-180.png') }}?v={{ pwa_icon_version }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/pwa/favicon-32.png') }}?v={{ pwa_icon_version }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="{{ url_for('main.home') }}" class="brand">
+        <span class="brand-mark">島</span>
+        <span class="brand-name">{{ site_short }}</span>
+      </a>
+      <nav class="site-nav">
+        <a href="{{ url_for('main.home') }}">首頁</a>
+        <a href="{{ url_for('board.board') }}">看板</a>
+        {% if current_user.is_authenticated and is_customer %}
+          <a href="{{ url_for('combos.list_combos') }}">我的組合</a>
+          <a href="{{ url_for('orders.list_orders') }}">訂單</a>
+          <a href="{{ url_for('auth.logout') }}" class="muted small">登出（{{ current_user.full_name or current_user.username }}）</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn ghost">登入 / 註冊</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <div class="container flashes">
+          {% for cat, msg in msgs %}
+            <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© {{ site_name }}</p>
+      <p class="muted">{{ site_tagline }}</p>
+    </div>
+  </footer>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+    }
+  </script>
+  {% block body_extra %}{% endblock %}
+</body>
+</html>

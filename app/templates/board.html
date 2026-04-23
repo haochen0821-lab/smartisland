@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ store.name if store else 'Smart Island Hub' }} ｜ 看板</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="board">
+  <div class="board-header">
+    <div>
+      <div class="board-title">{{ store.name if store else 'Smart Island Hub' }}</div>
+      <div class="board-sub">
+        📍 {{ store.location if store else '' }}　🚢 {{ store.port_name if store else '' }}
+        {% if weather %}
+          ｜🌤️ {{ weather.weather_desc }}　{{ weather.min_temp }}–{{ weather.max_temp }}°C
+          ｜💨 風 {{ weather.wind_level }} 級
+        {% endif %}
+        {% if weather_alert %}　<span style="color:#ff9b6e;font-weight:700">⚠ 天候警示</span>{% endif %}
+      </div>
+    </div>
+    <div class="board-clock" id="clock">--:--</div>
+  </div>
+
+  <div class="board-summary">
+    <div class="b g"><div class="n">{{ summary.green }}</div><div>🟢 充足品項</div></div>
+    <div class="b y"><div class="n">{{ summary.yellow }}</div><div>🟡 將補</div></div>
+    <div class="b r"><div class="n">{{ summary.red }}</div><div>🔴 缺貨 / 警示</div></div>
+  </div>
+
+  <div class="board-row">
+    <div class="board-card">
+      <h3>🚢 今日船班</h3>
+      {% if ferries %}
+        <ul class="ferries">
+          {% for f in ferries %}
+            <li class="ferry" style="border-color:rgba(255,255,255,.1)">
+              <div>
+                <strong>{{ f.ferry_name }}</strong>
+                <div class="small" style="opacity:.7">
+                  預計 {{ f.scheduled_time }}
+                  {% if f.actual_time %}｜實際 {{ f.actual_time }}{% endif %}
+                  ｜載貨率 {{ f.cargo_pct }}%
+                </div>
+                {% if f.note %}<div class="small" style="opacity:.6">{{ f.note }}</div>{% endif %}
+              </div>
+              <span class="pill {{ f.status }}">{{ f.status_label }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="opacity:.6">今日無船班排程</p>
+      {% endif %}
+    </div>
+
+    <div class="board-card">
+      <h3>📦 物資狀態</h3>
+      {% for g in by_cat %}
+        <div style="margin-bottom:14px">
+          <div style="font-weight:700;margin-bottom:6px;opacity:.85">{{ g.category.icon }} {{ g.category.name }}</div>
+          <div class="board-grid">
+            {% for it in g['items'] %}
+              <div class="board-light {{ it.color }}">
+                <span class="ic">{{ it.product.icon }}</span>
+                <div>
+                  <div class="name">{{ it.product.name }}</div>
+                  <div class="lab">{{ it.label }}｜{{ it.product.stock }}{{ it.product.unit }}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+<script>
+  function tick(){
+    const d = new Date();
+    const t = d.toTimeString().slice(0,5);
+    document.getElementById('clock').textContent = t;
+  }
+  tick();
+  setInterval(tick, 1000);
+  // 每 5 分鐘自動 reload，省得手動重整
+  setTimeout(() => location.reload(), 5 * 60 * 1000);
+</script>
+</body>
+</html>

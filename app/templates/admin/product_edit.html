@@ -1,0 +1,47 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>{{ '編輯商品' if product else '新增商品' }}</h2>
+<div class="card">
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid2">
+      <label>名稱<input type="text" name="name" required value="{{ product.name if product else '' }}"></label>
+      <label>SKU<input type="text" name="sku" required value="{{ product.sku if product else '' }}"></label>
+    </div>
+    <div class="grid2">
+      <label>分類
+        <select name="category_id">
+          <option value="">—</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if product and product.category_id==c.id %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>圖示 emoji<input type="text" name="icon" value="{{ product.icon if product else '' }}" maxlength="4"></label>
+    </div>
+    <div class="grid2">
+      <label>價格<input type="number" name="price" min="0" value="{{ product.price if product else 0 }}"></label>
+      <label>單位<input type="text" name="unit" value="{{ product.unit if product else '個' }}"></label>
+    </div>
+    <div class="grid2">
+      <label>目前庫存<input type="number" name="stock" min="0" value="{{ product.stock if product else 0 }}"></label>
+      <label>安全水位<input type="number" name="safety_stock" min="0" value="{{ product.safety_stock if product else 10 }}"></label>
+    </div>
+    <div class="grid2">
+      <label>排序<input type="number" name="sort_order" value="{{ product.sort_order if product else 0 }}"></label>
+      <label style="flex-direction:row;align-items:center;gap:8px">
+        <input type="checkbox" name="is_ferry_dependent" {% if not product or product.is_ferry_dependent %}checked{% endif %}> 依賴船班補給
+      </label>
+    </div>
+    {% if product %}
+      <label style="flex-direction:row;align-items:center;gap:8px">
+        <input type="checkbox" name="active" {% if product.active %}checked{% endif %}> 上架中
+      </label>
+    {% endif %}
+    <div class="actions">
+      <button class="btn">儲存</button>
+      <a class="btn ghost" href="{{ url_for('admin.products') }}">取消</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

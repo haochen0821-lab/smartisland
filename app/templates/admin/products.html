@@ -1,0 +1,32 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<div style="display:flex;justify-content:space-between;align-items:center">
+  <h2>📦 商品 / 庫存</h2>
+  <a class="btn" href="{{ url_for('admin.product_new') }}">＋ 新增商品</a>
+</div>
+<table class="table">
+  <thead>
+    <tr><th>商品</th><th>分類</th><th>價格</th><th>庫存</th><th>安全</th><th>船班依賴</th><th>調整</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+      <tr>
+        <td>{{ p.icon }} {{ p.name }}<div class="small muted">{{ p.sku }}</div></td>
+        <td>{{ p.category.name if p.category else '—' }}</td>
+        <td>${{ p.price }}</td>
+        <td><strong>{{ p.stock }}</strong>{{ p.unit }}</td>
+        <td class="small muted">{{ p.safety_stock }}</td>
+        <td>{{ '是' if p.is_ferry_dependent else '否' }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.product_restock', pid=p.id) }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="number" name="delta" value="0" style="width:64px">
+            <button class="btn small ghost">調整</button>
+          </form>
+        </td>
+        <td><a class="btn ghost small" href="{{ url_for('admin.product_edit', pid=p.id) }}">編輯</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>🚢 船班管理</h2>
+
+<div class="card">
+  <h3>新增船班</h3>
+  <form method="post" action="{{ url_for('admin.ferry_new') }}" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid2">
+      <label>日期<input type="date" name="schedule_date" value="{{ '' }}"></label>
+      <label>船名
+        <select name="ferry_name">
+          <option>台馬之星</option>
+          <option>合富快輪</option>
+          <option>小三通貨輪</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid2">
+      <label>港口<input type="text" name="port" value="福澳港"></label>
+      <label>預定時間（HH:MM）<input type="text" name="scheduled_time" placeholder="06:40"></label>
+    </div>
+    <div class="grid2">
+      <label>狀態
+        <select name="status">
+          {% for v, l in statuses %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>載貨率（%）<input type="number" name="cargo_pct" min="0" max="100" value="100"></label>
+    </div>
+    <label>備註<input type="text" name="note"></label>
+    <div class="actions"><button class="btn">新增</button></div>
+  </form>
+</div>
+
+<h3>近期船班</h3>
+<table class="table">
+  <thead><tr><th>日期</th><th>船 / 港</th><th>預定 / 實際</th><th>狀態</th><th>載貨</th><th>備註</th><th></th></tr></thead>
+  <tbody>
+    {% for f in ferries %}
+      <tr>
+        <form method="post" action="{{ url_for('admin.ferry_update', fid=f.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <td>{{ f.schedule_date }}</td>
+          <td>{{ f.ferry_name }}<div class="small muted">{{ f.port }}</div></td>
+          <td>
+            <div class="small">預 {{ f.scheduled_time or '—' }}</div>
+            <input type="text" name="actual_time" value="{{ f.actual_time }}" placeholder="06:45" style="width:80px">
+          </td>
+          <td>
+            <select name="status">
+              {% for v, l in statuses %}<option value="{{ v }}" {% if f.status==v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            </select>
+          </td>
+          <td><input type="number" name="cargo_pct" value="{{ f.cargo_pct }}" min="0" max="100" style="width:64px">%</td>
+          <td><input type="text" name="note" value="{{ f.note }}"></td>
+          <td>
+            <button class="btn small">儲存</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.ferry_delete', fid=f.id) }}" style="display:inline" onsubmit="return confirm('刪除這筆船班？')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn small ghost">刪除</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

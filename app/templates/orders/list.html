@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}我的訂單{% endblock %}
+{% block content %}
+<h2>📋 我的訂單</h2>
+{% if orders %}
+  <table class="table">
+    <thead>
+      <tr><th>訂單號</th><th>項目</th><th>金額</th><th>狀態</th><th>時間</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+        <tr>
+          <td><strong>#{{ o.order_no }}</strong></td>
+          <td>{{ o.item_count }} 件</td>
+          <td>${{ o.total_amount }}</td>
+          <td><span class="pill {{ 'arrived' if o.status=='picked' else ('scheduled' if o.status=='ready' else 'delayed') }}">{{ o.status_label }}</span></td>
+          <td class="small muted">{{ o.created_at.strftime('%m/%d %H:%M') }}</td>
+          <td><a class="btn ghost small" href="{{ url_for('orders.detail', order_no=o.order_no) }}">查看</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="card"><p class="muted">還沒有訂單。<a href="{{ url_for('combos.list_combos') }}">去挑一份組合</a></p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>🏪 店家資訊</h2>
+<div class="card">
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>店名<input type="text" name="name" value="{{ store.name }}"></label>
+    <div class="grid2">
+      <label>位置（如「南竿介壽」）<input type="text" name="location" value="{{ store.location }}"></label>
+      <label>電話<input type="text" name="phone" value="{{ store.phone }}"></label>
+    </div>
+    <label>地址<input type="text" name="address" value="{{ store.address }}"></label>
+    <div class="grid2">
+      <label>主要對應港口<input type="text" name="port_name" value="{{ store.port_name }}"></label>
+      <label>CWA 鄉鎮（南竿鄉/北竿鄉/東引鄉/莒光鄉）<input type="text" name="cwa_location" value="{{ store.cwa_location }}"></label>
+    </div>
+    <label>營業時間<input type="text" name="open_hours" value="{{ store.open_hours }}"></label>
+    <label>店家簡介<textarea name="intro">{{ store.intro }}</textarea></label>
+    <div class="actions"><button class="btn">儲存</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>⚙️ 設定</h2>
+
+<div class="card">
+  <h3>網站基本資料</h3>
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>站名<input type="text" name="site_name" value="{{ rows.get('site_name','') }}"></label>
+    <div class="grid2">
+      <label>短名（PWA short_name）<input type="text" name="site_short" value="{{ rows.get('site_short','') }}"></label>
+      <label>標語<input type="text" name="site_tagline" value="{{ rows.get('site_tagline','') }}"></label>
+    </div>
+    <div class="grid2">
+      <label>主題色<input type="text" name="theme_color" value="{{ rows.get('theme_color','') }}"></label>
+      <label>背景色<input type="text" name="background_color" value="{{ rows.get('background_color','') }}"></label>
+    </div>
+    <div class="actions"><button class="btn">儲存</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>📱 PWA 圖示</h3>
+  <p class="muted small">
+    上傳一張<strong>正方形、≥ 512×512、PNG</strong>，系統會自動產出 192/512、apple-touch 180、favicon 32，並 bump 版本號破快取。
+  </p>
+  {% if has_icon %}
+    <p>目前圖示：<img src="{{ url_for('static', filename='uploads/pwa/icon-192.png') }}?v={{ pwa_icon_version }}" alt="icon" style="height:64px;vertical-align:middle"></p>
+  {% else %}
+    <p class="muted">尚未上傳，目前使用內建占位圖。</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('admin.upload_pwa_icon') }}" enctype="multipart/form-data" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="file" name="icon" accept="image/png" required>
+    <div class="actions"><button class="btn">上傳並更新</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>🔐 變更密碼</h3>
+  <form method="post" action="{{ url_for('admin.change_password') }}" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>舊密碼<input type="password" name="old_password" required></label>
+    <label>新密碼（≥ 6 碼）<input type="password" name="new_password" required minlength="6"></label>
+    <div class="actions"><button class="btn">變更</button></div>
+  </form>
+</div>
+{% endblock %}

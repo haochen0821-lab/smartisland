@@ -1,0 +1,18 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>👥 註冊顧客</h2>
+<table class="table">
+  <thead><tr><th>姓名</th><th>帳號</th><th>身份</th><th>聯絡</th><th>註冊時間</th></tr></thead>
+  <tbody>
+    {% for c in customers %}
+      <tr>
+        <td>{{ c.full_name or '—' }}</td>
+        <td>{{ c.username }}</td>
+        <td>{{ c.role_label }}</td>
+        <td class="small muted">{{ c.phone }}　{{ c.email }}</td>
+        <td class="small muted">{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

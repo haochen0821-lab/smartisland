@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}註冊 ｜ {{ site_name }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:0 auto">
+  <h2>註冊新帳號</h2>
+  <p class="muted small">註冊後可建立常買組合、QR 取貨、訂單紀錄。</p>
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>帳號（英數）<input type="text" name="username" required maxlength="64"></label>
+    <label>姓名 / 暱稱<input type="text" name="full_name" maxlength="64"></label>
+    <div class="grid2">
+      <label>Email<input type="email" name="email"></label>
+      <label>手機<input type="tel" name="phone"></label>
+    </div>
+    <label>身份
+      <select name="role">
+        {% for value, label in roles %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="grid2">
+      <label>密碼<input type="password" name="password" required minlength="6"></label>
+      <label>再次輸入<input type="password" name="password2" required minlength="6"></label>
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">建立帳號</button>
+      <a class="btn ghost" href="{{ url_for('auth.login') }}">已有帳號，去登入</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

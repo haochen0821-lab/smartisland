@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}新增組合{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>新增常買組合</h2>
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid2">
+      <label>組合名稱<input type="text" name="name" required></label>
+      <label>圖示（emoji）<input type="text" name="icon" value="🛒" maxlength="4"></label>
+    </div>
+    <label>描述<input type="text" name="description"></label>
+
+    <h3 style="margin-top:18px">挑選商品與數量</h3>
+    <p class="muted small">想要的品項勾選並填數量，留空就不會加入。</p>
+    <div style="max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px">
+      <table class="table">
+        <thead>
+          <tr><th>選</th><th>商品</th><th>單價</th><th>庫存</th><th>數量</th></tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+            <tr>
+              <td><input type="checkbox" name="product_id" value="{{ p.id }}"></td>
+              <td>{{ p.icon }} {{ p.name }}</td>
+              <td>${{ p.price }}</td>
+              <td>{{ p.stock }}{{ p.unit }}</td>
+              <td><input type="number" name="quantity" min="1" value="1" style="width:70px"></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button class="btn">建立</button>
+      <a class="btn ghost" href="{{ url_for('combos.list_combos') }}">取消</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

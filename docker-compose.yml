@@ -1,0 +1,15 @@
+services:
+  smartisland:
+    build: .
+    container_name: smartisland
+    restart: unless-stopped
+    ports:
+      - "6200:6200"
+    volumes:
+      - ./instance:/app/instance
+      - ./app/static/uploads:/app/app/static/uploads
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=production
+      - TZ=Asia/Taipei
