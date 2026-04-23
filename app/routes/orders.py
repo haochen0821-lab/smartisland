@@ -23,6 +23,41 @@ def _new_order_no():
     return f'{today.strftime("%m%d")}-{seq:03d}'
 
 
+@orders_bp.route('/<order_no>/reorder', methods=['POST'])
+@login_required
+def reorder(order_no):
+    """快速重訂：複製舊訂單為新訂單。"""
+    _require_customer()
+    src = Order.query.filter_by(order_no=order_no).first_or_404()
+    if src.customer_id != current_user.id:
+        abort(403)
+
+    new = Order(
+        order_no=_new_order_no(),
+        qr_token=secrets.token_urlsafe(16),
+        customer_id=current_user.id,
+        combo_id=src.combo_id,
+        status='pending',
+        total_amount=0,
+    )
+    db.session.add(new)
+    db.session.flush()
+    total = 0
+    for it in src.items:
+        if not it.product:
+            continue
+        db.session.add(OrderItem(
+            order_id=new.id, product_id=it.product_id,
+            product_name=it.product.name, quantity=it.quantity,
+            unit_price=it.product.price,
+        ))
+        total += it.product.price * it.quantity
+    new.total_amount = total
+    db.session.commit()
+    flash(f'已建立新訂單 #{new.order_no}', 'success')
+    return redirect(url_for('orders.detail', order_no=new.order_no))
+
+
 @orders_bp.route('/place/<int:combo_id>', methods=['POST'])
 @login_required
 def place_from_combo(combo_id):

@@ -33,6 +33,7 @@ class Product(db.Model):
 
     sort_order = db.Column(db.Integer, default=0)
     active = db.Column(db.Boolean, default=True)
+    photo = db.Column(db.String(256), default='')   # 相對於 static/uploads/products/ 的檔名，可空
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def signal(self, ferry_today_ok: bool, weather_alert: bool):

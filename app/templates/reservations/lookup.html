@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}查預留{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:0 auto">
+  <h2>🔍 查詢預留 / 取貨碼</h2>
+  <form method="get" class="form">
+    <label>取貨碼<input type="text" name="code" value="{{ code_q }}" maxlength="8" required></label>
+    <label>手機末 4 碼（訪客必填）<input type="text" name="phone" maxlength="4" pattern="[0-9]{4}"></label>
+    <div class="actions"><button class="btn">查詢</button></div>
+  </form>
+
+  {% if code_q %}
+    {% if res %}
+      <hr>
+      <p>
+        <strong>取貨碼 #{{ res.code }}</strong><br>
+        商品：{{ res.product.icon }} {{ res.product.name }} × {{ res.quantity }} {{ res.product.unit }}<br>
+        顧客：{{ res.display_owner }}<br>
+        狀態：<span class="pill {{ 'arrived' if res.status in ('ready','picked') else ('delayed' if res.status=='requested' else 'cancelled') }}">{{ res.status_label }}</span><br>
+        建立：{{ res.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+        {% if res.is_open %}到期：{{ res.expires_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+        {% if res.note %}<br>備註：{{ res.note }}{% endif %}
+      </p>
+    {% else %}
+      <p class="muted">查無此預留，或手機末 4 碼不對。</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

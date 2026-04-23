@@ -10,6 +10,14 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/pwa/apple-touch-icon-180.png') }}?v={{ pwa_icon_version }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='uploads/pwa/favicon-32.png') }}?v={{ pwa_icon_version }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    (function(){
+      try{
+        var t = localStorage.getItem('sih_theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      }catch(e){}
+    })();
+  </script>
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -29,6 +37,9 @@
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="btn ghost">登入 / 註冊</a>
         {% endif %}
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="切換亮/暗底" title="切換亮/暗底">
+          <span id="themeIcon">🌙</span>
+        </button>
       </nav>
     </div>
   </header>
@@ -59,6 +70,18 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
     }
+    (function(){
+      var btn = document.getElementById('themeToggle');
+      var ic = document.getElementById('themeIcon');
+      if (!btn) return;
+      function syncIcon(){ ic.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙'; }
+      syncIcon();
+      btn.addEventListener('click', function(){
+        var dark = document.documentElement.classList.toggle('dark');
+        try{ localStorage.setItem('sih_theme', dark ? 'dark' : 'light'); }catch(e){}
+        syncIcon();
+      });
+    })();
   </script>
   {% block body_extra %}{% endblock %}
 </body>

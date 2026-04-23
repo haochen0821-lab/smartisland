@@ -5,8 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>{{ store.name if store else 'Smart Island Hub' }} ｜ 看板</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    (function(){
+      try{
+        var t = localStorage.getItem('sih_theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      }catch(e){}
+    })();
+  </script>
 </head>
 <body class="board">
+  <div class="board-topbar">
+    <a href="{{ url_for('main.home') }}">⬅ 回首頁</a>
+    <a href="?mode=carousel" id="carouselLink" title="輪播模式">🎬 輪播</a>
+    <button type="button" id="themeToggle" title="切換亮/暗底">
+      <span id="themeIcon">🌙</span> 主題
+    </button>
+    <button type="button" onclick="document.documentElement.requestFullscreen && document.documentElement.requestFullscreen()" title="全螢幕">⛶ 全螢幕</button>
+  </div>
+
   <div class="board-header">
     <div>
       <div class="board-title">{{ store.name if store else 'Smart Island Hub' }}</div>
@@ -16,7 +33,7 @@
           ｜🌤️ {{ weather.weather_desc }}　{{ weather.min_temp }}–{{ weather.max_temp }}°C
           ｜💨 風 {{ weather.wind_level }} 級
         {% endif %}
-        {% if weather_alert %}　<span style="color:#ff9b6e;font-weight:700">⚠ 天候警示</span>{% endif %}
+        {% if weather_alert %}　<span style="color:#d65a5a;font-weight:700">⚠ 天候警示</span>{% endif %}
       </div>
     </div>
     <div class="board-clock" id="clock">--:--</div>
@@ -34,22 +51,22 @@
       {% if ferries %}
         <ul class="ferries">
           {% for f in ferries %}
-            <li class="ferry" style="border-color:rgba(255,255,255,.1)">
+            <li class="ferry">
               <div>
                 <strong>{{ f.ferry_name }}</strong>
-                <div class="small" style="opacity:.7">
+                <div class="small">
                   預計 {{ f.scheduled_time }}
                   {% if f.actual_time %}｜實際 {{ f.actual_time }}{% endif %}
                   ｜載貨率 {{ f.cargo_pct }}%
                 </div>
-                {% if f.note %}<div class="small" style="opacity:.6">{{ f.note }}</div>{% endif %}
+                {% if f.note %}<div class="small">{{ f.note }}</div>{% endif %}
               </div>
               <span class="pill {{ f.status }}">{{ f.status_label }}</span>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p style="opacity:.6">今日無船班排程</p>
+        <p class="board-sub">今日無船班排程</p>
       {% endif %}
     </div>
 
@@ -57,7 +74,7 @@
       <h3>📦 物資狀態</h3>
       {% for g in by_cat %}
         <div style="margin-bottom:14px">
-          <div style="font-weight:700;margin-bottom:6px;opacity:.85">{{ g.category.icon }} {{ g.category.name }}</div>
+          <div style="font-weight:700;margin-bottom:6px">{{ g.category.icon }} {{ g.category.name }}</div>
           <div class="board-grid">
             {% for it in g['items'] %}
               <div class="board-light {{ it.color }}">
@@ -77,13 +94,44 @@
 <script>
   function tick(){
     const d = new Date();
-    const t = d.toTimeString().slice(0,5);
-    document.getElementById('clock').textContent = t;
+    document.getElementById('clock').textContent = d.toTimeString().slice(0,5);
   }
   tick();
   setInterval(tick, 1000);
-  // 每 5 分鐘自動 reload，省得手動重整
   setTimeout(() => location.reload(), 5 * 60 * 1000);
+
+  (function(){
+    var btn = document.getElementById('themeToggle');
+    var ic = document.getElementById('themeIcon');
+    function syncIcon(){ ic.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙'; }
+    syncIcon();
+    btn.addEventListener('click', function(){
+      var dark = document.documentElement.classList.toggle('dark');
+      try{ localStorage.setItem('sih_theme', dark ? 'dark' : 'light'); }catch(e){}
+      syncIcon();
+    });
+  })();
+
+  // 輪播模式：?mode=carousel 時把畫面分區、每 12 秒切換
+  (function(){
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('mode') !== 'carousel') return;
+    var sections = [
+      { name: '🚢 今日船班', sel: '.board-row .board-card:first-child' },
+      { name: '📦 物資狀態', sel: '.board-row .board-card:nth-child(2)' },
+    ];
+    var idx = 0;
+    function render(){
+      var cards = document.querySelectorAll('.board-row .board-card');
+      cards.forEach(function(c, i){ c.style.display = (i === idx) ? 'block' : 'none'; });
+      var row = document.querySelector('.board-row');
+      if (row) row.style.gridTemplateColumns = '1fr';
+      idx = (idx + 1) % cards.length;
+    }
+    render();
+    setInterval(render, 12000);
+    document.getElementById('carouselLink').textContent = '🎬 輪播中';
+  })();
 </script>
 </body>
 </html>

@@ -1,16 +1,69 @@
 {% extends "admin/_layout.html" %}
 {% block admin_content %}
-<h2>👥 註冊顧客</h2>
+<h2>👥 會員管理</h2>
+
+<div class="card">
+  <h3>新增會員</h3>
+  <form method="post" action="{{ url_for('admin.customer_new') }}" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid2">
+      <label>帳號（英數）<input type="text" name="username" required maxlength="64"></label>
+      <label>姓名<input type="text" name="full_name" maxlength="64"></label>
+    </div>
+    <div class="grid2">
+      <label>Email<input type="email" name="email"></label>
+      <label>手機<input type="tel" name="phone"></label>
+    </div>
+    <div class="grid2">
+      <label>身份
+        <select name="role">
+          {% for v, l in roles %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>密碼（≥ 6 碼）<input type="password" name="password" required minlength="6"></label>
+    </div>
+    <div class="actions"><button class="btn">新增</button></div>
+  </form>
+</div>
+
 <table class="table">
-  <thead><tr><th>姓名</th><th>帳號</th><th>身份</th><th>聯絡</th><th>註冊時間</th></tr></thead>
+  <thead><tr><th>姓名</th><th>帳號</th><th>身份 / 聯絡</th><th>狀態</th><th>建立</th><th>操作</th></tr></thead>
   <tbody>
     {% for c in customers %}
       <tr>
         <td>{{ c.full_name or '—' }}</td>
         <td>{{ c.username }}</td>
-        <td>{{ c.role_label }}</td>
-        <td class="small muted">{{ c.phone }}　{{ c.email }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.customer_update', cid=c.id) }}" style="display:flex;flex-direction:column;gap:4px">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="role">
+              {% for v, l in roles %}<option value="{{ v }}" {% if c.role==v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            </select>
+            <input type="text" name="full_name" value="{{ c.full_name }}" placeholder="姓名" style="width:140px">
+            <input type="text" name="phone" value="{{ c.phone }}" placeholder="手機" style="width:140px">
+            <input type="email" name="email" value="{{ c.email }}" placeholder="Email" style="width:140px">
+            <button class="btn small">儲存</button>
+          </form>
+        </td>
+        <td>
+          {% if c.is_active %}<span class="pill arrived">啟用</span>{% else %}<span class="pill cancelled">停用</span>{% endif %}
+        </td>
         <td class="small muted">{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.customer_toggle', cid=c.id) }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn small ghost">{{ '停用' if c.is_active else '啟用' }}</button>
+          </form>
+          <form method="post" action="{{ url_for('admin.customer_reset_password', cid=c.id) }}" style="display:inline-flex;gap:4px;margin-top:4px">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="password" name="new_password" placeholder="新密碼" minlength="6" style="width:96px">
+            <button class="btn small ghost">重設</button>
+          </form>
+          <form method="post" action="{{ url_for('admin.customer_delete', cid=c.id) }}" style="display:inline" onsubmit="return confirm('刪除 {{ c.username }} 連同其組合與訂單？')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn small danger">刪除</button>
+          </form>
+        </td>
       </tr>
     {% endfor %}
   </tbody>

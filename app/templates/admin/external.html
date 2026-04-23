@@ -1,0 +1,56 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>🌊 離島實時情報</h2>
+<p class="muted small">公開來源資料，30 分鐘自動快取。最後更新：{{ external.fetched_at.strftime('%Y-%m-%d %H:%M') if external.fetched_at else '—' }}</p>
+
+<form method="post" action="{{ url_for('admin.external_refresh') }}" style="margin-bottom:14px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn">⚡ 重新抓取全部</button>
+</form>
+
+<div class="row">
+  <div class="card" style="flex:1 1 320px">
+    <h3>✈️ 鄰近機場觀測（METAR）</h3>
+    <p class="small muted">{{ external.metar.note }}</p>
+    {% for s in external.metar.stations %}
+      <div style="margin-bottom:10px">
+        <strong>{{ s.icao }}</strong> <span class="small muted">{{ s.desc }}</span>
+        <p class="small" style="margin:4px 0">{{ s.human }}</p>
+        <pre class="small muted" style="white-space:pre-wrap;margin:0">{{ s.raw }}</pre>
+      </div>
+    {% endfor %}
+    <p class="small muted">資料源：aviationweather.gov（無需金鑰）</p>
+  </div>
+
+  <div class="card" style="flex:1 1 320px">
+    <h3>🌊 馬祖海面</h3>
+    {% if external.marine_matsu.error %}
+      <p class="muted small">取不到資料：{{ external.marine_matsu.error }}</p>
+    {% else %}
+      <ul>{% for it in external.marine_matsu.get('items', []) %}<li>{{ it.name }}：{{ it.value }}</li>{% endfor %}</ul>
+    {% endif %}
+    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/NSea.html">↗ CWA 官方頁</a>
+  </div>
+
+  <div class="card" style="flex:1 1 320px">
+    <h3>⚓ 台灣北部海面</h3>
+    {% if external.marine_north.error %}
+      <p class="muted small">取不到資料：{{ external.marine_north.error }}</p>
+    {% else %}
+      <ul>{% for it in external.marine_north.get('items', []) %}<li>{{ it.name }}：{{ it.value }}</li>{% endfor %}</ul>
+    {% endif %}
+    <a class="btn ghost small" target="_blank" href="https://www.cwa.gov.tw/V8/C/M/FSea.html">↗ CWA 官方頁</a>
+  </div>
+</div>
+
+<h3 style="margin-top:18px">🔗 外部資源連結</h3>
+<div class="row">
+  {% for l in links %}
+    <div class="card" style="flex:1 1 240px">
+      <h4 style="margin:0">{{ l.icon }} {{ l.name }}</h4>
+      <p class="small muted">{{ l.desc }}</p>
+      <a class="btn ghost small" target="_blank" href="{{ l.url }}">前往</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

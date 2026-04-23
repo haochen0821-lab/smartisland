@@ -1,0 +1,48 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>📌 商品預留</h2>
+<p class="muted small">顧客在首頁點商品燈號送出的預留請求。24 小時自動釋放。</p>
+
+<div style="margin-bottom:10px">
+  <a class="btn ghost small {{ 'btn' if current=='open' }}" href="{{ url_for('admin.reservations', status='open') }}">進行中</a>
+  {% for v, l in statuses %}
+    <a class="btn ghost small {{ 'btn' if current==v }}" href="{{ url_for('admin.reservations', status=v) }}">{{ l }}</a>
+  {% endfor %}
+  <a class="btn ghost small {{ 'btn' if current=='all' }}" href="{{ url_for('admin.reservations', status='all') }}">全部</a>
+</div>
+
+{% if rows %}
+<table class="table">
+  <thead><tr><th>取貨碼</th><th>商品</th><th>數量</th><th>顧客</th><th>狀態</th><th>建立 / 到期</th><th>備註</th><th>變更</th></tr></thead>
+  <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><strong style="font-size:1.1rem">#{{ r.code }}</strong></td>
+        <td>{{ r.product.icon if r.product else '' }} {{ r.product.name if r.product else '—' }}</td>
+        <td>{{ r.quantity }} {{ r.product.unit if r.product else '' }}</td>
+        <td class="small">{{ r.display_owner }}</td>
+        <td><span class="pill {{ 'arrived' if r.status in ('ready','picked') else ('delayed' if r.status=='requested' else 'cancelled') }}">{{ r.status_label }}</span></td>
+        <td class="small muted">
+          {{ r.created_at.strftime('%m/%d %H:%M') }}<br>
+          {% if r.is_open %}到期 {{ r.expires_at.strftime('%m/%d %H:%M') }}{% endif %}
+        </td>
+        <td class="small muted">{{ r.note }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.reservation_set_status', rid=r.id) }}" style="display:flex;gap:4px">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="status">
+              {% for v, l in statuses %}
+                <option value="{{ v }}" {% if r.status==v %}selected{% endif %}>{{ l }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn small">變更</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="card"><p class="muted">目前沒有符合條件的預留。</p></div>
+{% endif %}
+{% endblock %}

@@ -7,6 +7,7 @@ from app.models.ferry import FerrySchedule
 from app.models.weather import WeatherSnapshot
 from app.models.combo import Combo, ComboItem
 from app.models.order import Order, OrderItem
+from app.models.reservation import ProductReservation
 
 __all__ = [
     'AdminUser', 'Customer', 'SiteSetting', 'StoreInfo',
@@ -14,4 +15,5 @@ __all__ = [
     'FerrySchedule', 'WeatherSnapshot',
     'Combo', 'ComboItem',
     'Order', 'OrderItem',
+    'ProductReservation',
 ]

@@ -2,7 +2,7 @@
 {% block admin_content %}
 <h2>{{ '編輯商品' if product else '新增商品' }}</h2>
 <div class="card">
-  <form method="post" class="form">
+  <form method="post" class="form" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="grid2">
       <label>名稱<input type="text" name="name" required value="{{ product.name if product else '' }}"></label>
@@ -38,6 +38,13 @@
         <input type="checkbox" name="active" {% if product.active %}checked{% endif %}> 上架中
       </label>
     {% endif %}
+    <label>商品照片（選填，PNG/JPG/WebP）
+      <input type="file" name="photo" accept="image/png,image/jpeg,image/webp">
+    </label>
+    {% if product and product.photo %}
+      <div>目前照片：<img src="{{ url_for('static', filename='uploads/products/' + product.photo) }}" style="height:64px;border-radius:8px;vertical-align:middle"></div>
+    {% endif %}
+    {% if product %}<p class="small muted">電子紙模擬頁：<a target="_blank" href="{{ url_for('tag.show', sku=product.sku) }}">/tag/{{ product.sku }}</a></p>{% endif %}
     <div class="actions">
       <button class="btn">儲存</button>
       <a class="btn ghost" href="{{ url_for('admin.products') }}">取消</a>

@@ -3,25 +3,100 @@
 <h2>📊 儀表板</h2>
 
 <div class="row">
-  <div class="card" style="flex:1 1 200px;text-align:center">
+  <div class="card" style="flex:1 1 180px;text-align:center">
     <div class="muted small">充足品項</div>
-    <div style="font-size:2rem;font-weight:800;color:var(--green)">{{ summary.green }}</div>
+    <div style="font-size:1.8rem;font-weight:800;color:var(--green)">{{ summary.green }}</div>
   </div>
-  <div class="card" style="flex:1 1 200px;text-align:center">
+  <div class="card" style="flex:1 1 180px;text-align:center">
     <div class="muted small">將補品項</div>
-    <div style="font-size:2rem;font-weight:800;color:var(--yellow)">{{ summary.yellow }}</div>
+    <div style="font-size:1.8rem;font-weight:800;color:var(--yellow)">{{ summary.yellow }}</div>
   </div>
-  <div class="card" style="flex:1 1 200px;text-align:center">
+  <div class="card" style="flex:1 1 180px;text-align:center">
     <div class="muted small">缺貨 / 警示</div>
-    <div style="font-size:2rem;font-weight:800;color:var(--red)">{{ summary.red }}</div>
+    <div style="font-size:1.8rem;font-weight:800;color:var(--red)">{{ summary.red }}</div>
   </div>
-  <div class="card" style="flex:1 1 200px;text-align:center">
+  <div class="card" style="flex:1 1 180px;text-align:center">
     <div class="muted small">待備貨訂單</div>
-    <div style="font-size:2rem;font-weight:800">{{ pending_orders }} <span class="small muted">+ 待取 {{ ready_orders }}</span></div>
+    <div style="font-size:1.8rem;font-weight:800">{{ pending_orders }} <span class="small muted">+ 待取 {{ ready_orders }}</span></div>
   </div>
-  <div class="card" style="flex:1 1 200px;text-align:center">
-    <div class="muted small">註冊顧客</div>
-    <div style="font-size:2rem;font-weight:800">{{ customers }}</div>
+  <div class="card" style="flex:1 1 180px;text-align:center">
+    <div class="muted small">進行中預留</div>
+    <div style="font-size:1.8rem;font-weight:800">{{ open_res }}</div>
+  </div>
+  <div class="card" style="flex:1 1 180px;text-align:center">
+    <div class="muted small">註冊會員</div>
+    <div style="font-size:1.8rem;font-weight:800">{{ customers }}</div>
+  </div>
+</div>
+
+{% if alerts %}
+  <div class="card" style="border-left:6px solid var(--red)">
+    <h3 style="margin-top:0">🚨 缺貨 / 低庫存提醒</h3>
+    <table class="table">
+      <thead><tr><th>商品</th><th>庫存</th><th>安全水位</th><th>嚴重度</th></tr></thead>
+      <tbody>
+        {% for a in alerts %}
+          <tr>
+            <td>{{ a.product.icon }} {{ a.product.name }}</td>
+            <td><strong>{{ a.product.stock }}</strong>{{ a.product.unit }}</td>
+            <td class="muted">{{ a.product.safety_stock }}</td>
+            <td>
+              {% if a.severity=='high' %}<span class="pill cancelled">🔴 已斷貨</span>
+              {% elif a.severity=='mid' %}<span class="pill delayed">🟠 嚴重不足</span>
+              {% else %}<span class="pill scheduled">🟡 接近安全水位</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="small muted">未來在 .env 設定 SMTP 後，可自動 Email 通知店長。</p>
+  </div>
+{% endif %}
+
+<div class="row">
+  <div class="card" style="flex:1 1 320px">
+    <h3>📈 下批船建議補貨（依過去 7 天）</h3>
+    {% if advice %}
+      <table class="table">
+        <thead><tr><th>商品</th><th>近 7 日銷量</th><th>日均</th><th>建議補</th></tr></thead>
+        <tbody>
+          {% for a in advice %}
+            <tr>
+              <td>{{ a.product.icon }} {{ a.product.name }}</td>
+              <td>{{ a.consumed_7d }}</td>
+              <td class="muted">{{ a.avg_daily }}/日</td>
+              <td><strong style="color:var(--teal-d)">+{{ a.suggested }}</strong> {{ a.product.unit }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">資料不足，無法給建議。</p>
+    {% endif %}
+  </div>
+
+  <div class="card" style="flex:1 1 320px">
+    <h3>🔥 熱門時段（近 30 日訂單分布）</h3>
+    {% if heatmap.max %}
+      <table class="table" style="font-size:.78rem">
+        <thead><tr><th></th>{% for b in heatmap.buckets %}<th>{{ b }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for row in heatmap.matrix %}
+            <tr>
+              <th>{{ row.name }}</th>
+              {% for c in row.cells %}
+                <td style="text-align:center;background:rgba(31,111,139,{{ c.ratio * 0.85 }});color:{{ '#fff' if c.ratio > 0.4 else 'inherit' }}">
+                  {{ c.val if c.val else '·' }}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="small muted">最大值 {{ heatmap.max }} 筆。可協助安排店員班表。</p>
+    {% else %}
+      <p class="muted">近 30 日無訂單資料。</p>
+    {% endif %}
   </div>
 </div>
 
@@ -34,7 +109,7 @@
           <li class="ferry">
             <div>
               <strong>{{ f.ferry_name }}</strong>
-              <div class="small muted">預計 {{ f.scheduled_time }} ｜載貨率 {{ f.cargo_pct }}%</div>
+              <div class="small muted">預計 {{ f.scheduled_time }} ｜載貨 {{ f.cargo_pct }}%</div>
               {% if f.note %}<div class="small muted">{{ f.note }}</div>{% endif %}
             </div>
             <span class="pill {{ f.status }}">{{ f.status_label }}</span>
@@ -58,28 +133,7 @@
       <p class="muted">尚無資料</p>
     {% endif %}
     <a class="btn ghost small" href="{{ url_for('admin.weather') }}">前往天氣設定</a>
-  </div>
-</div>
-
-<div class="row">
-  <div class="card" style="flex:1 1 320px">
-    <h3>⚠️ 低庫存（≤ 安全水位）</h3>
-    {% if low_stock %}
-      <table class="table">
-        <thead><tr><th>商品</th><th>庫存</th><th>安全</th></tr></thead>
-        <tbody>
-          {% for p in low_stock %}
-            <tr>
-              <td>{{ p.icon }} {{ p.name }}</td>
-              <td>{{ p.stock }}{{ p.unit }}</td>
-              <td>{{ p.safety_stock }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p class="muted">所有商品庫存皆高於安全水位 🎉</p>
-    {% endif %}
+    <a class="btn ghost small" href="{{ url_for('admin.sources') }}">查資料來源</a>
   </div>
 
   <div class="card" style="flex:1 1 320px">

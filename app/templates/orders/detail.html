@@ -6,6 +6,12 @@
     <h2>訂單 #{{ order.order_no }}</h2>
     <p class="muted small">建立於 {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
     <p>狀態：<span class="pill {{ 'arrived' if order.status=='picked' else ('scheduled' if order.status=='ready' else 'delayed') }}">{{ order.status_label }}</span></p>
+    {% if is_customer %}
+      <form method="post" action="{{ url_for('orders.reorder', order_no=order.order_no) }}" style="margin-bottom:10px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn">🔁 再下一份相同訂單</button>
+      </form>
+    {% endif %}
 
     <table class="table">
       <thead><tr><th>商品</th><th>數量</th><th>小計</th></tr></thead>

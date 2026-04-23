@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_login import current_user
 from app.models import SiteSetting, StoreInfo, Customer
 
@@ -15,4 +16,5 @@ def inject_globals():
         'settings': settings,
         'store': store,
         'is_customer': isinstance(current_user._get_current_object() if hasattr(current_user, '_get_current_object') else current_user, Customer),
+        'demo_mode': current_app.config.get('DEMO_MODE', False),
     }

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}我的預留{% endblock %}
+{% block content %}
+<h2>📌 我的預留商品</h2>
+{% if rows %}
+  <table class="table">
+    <thead><tr><th>取貨碼</th><th>商品</th><th>數量</th><th>狀態</th><th>建立 / 到期</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><strong>#{{ r.code }}</strong></td>
+          <td>{{ r.product.icon if r.product else '' }} {{ r.product.name if r.product else '—' }}</td>
+          <td>{{ r.quantity }} {{ r.product.unit if r.product else '' }}</td>
+          <td><span class="pill {{ 'arrived' if r.status in ('ready','picked') else ('delayed' if r.status=='requested' else 'cancelled') }}">{{ r.status_label }}</span></td>
+          <td class="small muted">{{ r.created_at.strftime('%m/%d %H:%M') }}<br>
+            {% if r.is_open %}到期 {{ r.expires_at.strftime('%m/%d %H:%M') }}{% endif %}
+          </td>
+          <td>
+            {% if r.is_open %}
+              <form method="post" action="{{ url_for('reservations.cancel', res_id=r.id) }}" onsubmit="return confirm('取消這筆預留？')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn small ghost">取消</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="card"><p class="muted">還沒有預留商品。回首頁點任一個物資燈號即可預留。</p></div>
+{% endif %}
+{% endblock %}

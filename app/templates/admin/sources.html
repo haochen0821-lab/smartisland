@@ -1,0 +1,32 @@
+{% extends "admin/_layout.html" %}
+{% block admin_content %}
+<h2>🔌 資料來源</h2>
+<p class="muted small">系統運作所依賴的資料來源、最後更新時間與更新入口。</p>
+
+{% if not has_cwa %}
+  <div class="flash flash-error" style="margin:8px 0">
+    ⚠️ 尚未設定 <code>CWA_API_KEY</code>，氣象資料目前使用 fallback 模擬資料。請至 <a href="https://opendata.cwa.gov.tw" target="_blank">opendata.cwa.gov.tw</a> 申請後填入 <code>.env</code> 並重啟容器。
+  </div>
+{% endif %}
+
+<div class="row">
+  {% for s in sources %}
+    <div class="card" style="flex:1 1 320px">
+      <h3>{{ s.name }} {% if s.connected %}<span class="pill arrived" style="margin-left:6px">已連線</span>{% else %}<span class="pill cancelled">未連線</span>{% endif %}</h3>
+      <p class="small muted">{{ s.desc }}</p>
+      <p class="small">
+        最後更新：
+        {% if s.last %}{{ s.last.strftime('%Y-%m-%d %H:%M') }}{% else %}<span class="muted">尚無</span>{% endif %}
+      </p>
+      <p class="small muted">{{ s.note }}</p>
+      <a class="btn ghost small" href="{{ s.refresh_url }}">前往 / 更新</a>
+      {% if s.key == 'cwa' %}
+        <form method="post" action="{{ url_for('admin.weather_refresh') }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn small">⚡ 立刻拉取</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

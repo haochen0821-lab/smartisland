@@ -64,20 +64,31 @@
     {% endif %}
   </div>
 
-  {% if current_user.is_authenticated and is_customer %}
-    <div class="card" style="flex:1 1 320px">
-      <h3>⚡ 一鍵下單</h3>
+  <div class="card" style="flex:1 1 320px">
+    <h3>⚡ 一鍵取貨</h3>
+    {% if current_user.is_authenticated and is_customer %}
       <p class="muted small">挑一份你的常買組合，到店出示 QR 即可取貨。</p>
       <a class="btn block" href="{{ url_for('combos.list_combos') }}">前往我的組合</a>
-    </div>
-  {% else %}
-    <div class="card" style="flex:1 1 320px">
-      <h3>👋 還沒有帳號？</h3>
-      <p class="muted small">註冊後可建立「常買組合」，一鍵下單、QR 取貨，省去排隊與東挑西選。</p>
+      <div style="margin-top:8px">
+        <a class="btn ghost block" href="{{ url_for('reservations.mine') }}">📌 我的預留商品</a>
+      </div>
+    {% else %}
+      <p class="muted small">註冊後可建立「常買組合」一鍵下單。沒帳號也可點下方燈號預留商品。</p>
       <a class="btn block" href="{{ url_for('auth.register') }}">免費註冊</a>
-    </div>
-  {% endif %}
+      <div style="margin-top:8px">
+        <a class="btn ghost block" href="{{ url_for('reservations.lookup') }}">🔍 查預留 / 取貨碼</a>
+      </div>
+    {% endif %}
+  </div>
 </div>
+
+{% if demo_mode %}
+  <div class="card" style="background:linear-gradient(90deg,#fff3df,#fde9c8);border:1px solid #e9c98c">
+    <strong>🧪 測試模式</strong>　目前處於 DEMO_MODE，可
+    <a class="btn small" href="{{ url_for('admin.demo_enter') }}">🛠️ 一鍵進入後台</a>
+    免登入。正式上線前請於 <code>.env</code> 設 <code>DEMO_MODE=false</code>。
+  </div>
+{% endif %}
 
 {% if weather_alert %}
   <div class="card" style="border-left:6px solid var(--red)">
@@ -86,24 +97,192 @@
   </div>
 {% endif %}
 
-<h2 style="margin-top:24px">📦 物資燈號</h2>
+<section class="card" style="border-left:6px solid var(--teal)">
+  <h2 style="margin-top:0">🌊 離島實時情報</h2>
+  <p class="muted small">第三方公開資料，每 30 分鐘更新一次。最後更新：{{ external.fetched_at.strftime('%H:%M') if external.fetched_at else '—' }}</p>
+
+  <div class="row">
+    <div style="flex:1 1 240px">
+      <h4 style="margin:0 0 6px">✈️ 鄰近機場觀測（METAR）</h4>
+      <p class="small muted">{{ external.metar.note }}</p>
+      {% for s in external.metar.stations %}
+        <div style="margin-bottom:6px">
+          <strong class="small">{{ s.icao }}</strong>
+          <span class="small muted">{{ s.desc }}</span><br>
+          <span class="small">{{ s.human }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    <div style="flex:1 1 240px">
+      <h4 style="margin:0 0 6px">🌊 馬祖海面</h4>
+      {% if external.marine_matsu.error %}
+        <p class="small muted">尚未取得（{{ external.marine_matsu.error }}）<br>
+          <a href="https://www.cwa.gov.tw/V8/C/M/NSea.html" target="_blank">→ 看 CWA 官方</a>
+        </p>
+      {% else %}
+        {% for it in external.marine_matsu.get('items', []) %}
+          <div class="small">{{ it.name }}：{{ it.value }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    <div style="flex:1 1 240px">
+      <h4 style="margin:0 0 6px">⚓ 台灣北部海面</h4>
+      {% if external.marine_north.error %}
+        <p class="small muted">尚未取得（{{ external.marine_north.error }}）<br>
+          <a href="https://www.cwa.gov.tw/V8/C/M/FSea.html" target="_blank">→ 看 CWA 官方</a>
+        </p>
+      {% else %}
+        {% for it in external.marine_north.get('items', []) %}
+          <div class="small">{{ it.name }}：{{ it.value }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
+    {% for l in external.links %}
+      <a class="btn ghost small" target="_blank" href="{{ l.url }}">{{ l.icon }} {{ l.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<h2 style="margin-top:24px">📦 物資燈號 <span class="small muted">（點選即可預留商品）</span></h2>
+<div id="signal-cache-info" class="small muted" style="margin-bottom:8px"></div>
 {% for g in grouped %}
   {% if g['items'] %}
   <section class="cat-section">
     <h3 class="cat-title"><span class="ic">{{ g.category.icon }}</span>{{ g.category.name }}</h3>
     <div class="lights">
       {% for it in g['items'] %}
-        <div class="light">
+        <button type="button" class="light light-btn"
+                data-id="{{ it.product.id }}"
+                data-name="{{ it.product.name }}"
+                data-icon="{{ it.product.icon }}"
+                data-unit="{{ it.product.unit }}"
+                data-stock="{{ it.product.stock }}"
+                data-color="{{ it.color }}">
           <span class="dot {{ it.color }}"></span>
           <span class="icon">{{ it.product.icon }}</span>
-          <div>
+          <div style="text-align:left">
             <div class="name">{{ it.product.name }}</div>
             <div class="label">{{ it.label }}｜庫存 {{ it.product.stock }}{{ it.product.unit }}｜${{ it.product.price }}</div>
           </div>
-        </div>
+        </button>
       {% endfor %}
     </div>
   </section>
   {% endif %}
 {% endfor %}
+
+<!-- 預留 Modal -->
+<div id="reserveModal" class="modal" hidden>
+  <div class="modal-box">
+    <button class="modal-close" type="button" id="reserveClose">×</button>
+    <h3 id="reserveTitle">預留商品</h3>
+    <div id="reserveSuccess" class="reserve-success" hidden></div>
+    <form id="reserveForm" class="form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if not (current_user.is_authenticated and is_customer) %}
+        <div class="grid2">
+          <label>姓名 <input type="text" name="guest_name" required maxlength="64"></label>
+          <label>手機末 4 碼 <input type="text" name="guest_phone_last4" required maxlength="4" pattern="[0-9]{4}"></label>
+        </div>
+        <p class="small muted">取貨時報出取貨碼即可。資料只用於本次預留。</p>
+      {% else %}
+        <p class="small muted">已登入：{{ current_user.full_name or current_user.username }}（直接綁定本筆預留）</p>
+      {% endif %}
+      <label>數量
+        <input type="number" name="quantity" min="1" max="999" value="1" required style="width:120px">
+      </label>
+      <label>備註（選填）<input type="text" name="note" maxlength="256" placeholder="例：6 點半過去拿"></label>
+      <div class="actions">
+        <button class="btn" type="submit" id="reserveSubmit">送出預留</button>
+        <button class="btn ghost" type="button" id="reserveCancel">取消</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  // 離線最後燈號快取
+  function lights(){
+    return Array.from(document.querySelectorAll('.light-btn')).map(b=>({
+      id: b.dataset.id, name: b.dataset.name, icon: b.dataset.icon,
+      color: b.dataset.color, stock: b.dataset.stock, unit: b.dataset.unit
+    }));
+  }
+  if (lights().length){
+    try{ localStorage.setItem('sih_lights_cache', JSON.stringify({at: Date.now(), data: lights()})); }catch(e){}
+  } else {
+    try{
+      const c = JSON.parse(localStorage.getItem('sih_lights_cache') || '{}');
+      if (c.data && c.data.length){
+        const ago = Math.round((Date.now() - c.at)/60000);
+        document.getElementById('signal-cache-info').textContent = '⚠️ 目前無法連線，顯示 ' + ago + ' 分鐘前的快取燈號';
+      }
+    }catch(e){}
+  }
+
+  // 預留 modal
+  const modal = document.getElementById('reserveModal');
+  const title = document.getElementById('reserveTitle');
+  const form = document.getElementById('reserveForm');
+  const success = document.getElementById('reserveSuccess');
+  let currentId = null;
+
+  function open(b){
+    currentId = b.dataset.id;
+    title.textContent = '預留：' + b.dataset.icon + ' ' + b.dataset.name;
+    success.hidden = true;
+    form.hidden = false;
+    form.reset();
+    modal.hidden = false;
+  }
+  function close(){ modal.hidden = true; }
+
+  document.querySelectorAll('.light-btn').forEach(b=>{
+    b.addEventListener('click', ()=>open(b));
+  });
+  document.getElementById('reserveClose').addEventListener('click', close);
+  document.getElementById('reserveCancel').addEventListener('click', close);
+  modal.addEventListener('click', e=>{ if (e.target === modal) close(); });
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    try{
+      const r = await fetch('/reserve/' + currentId, {
+        method:'POST',
+        body: fd,
+        headers: {'X-CSRFToken': fd.get('csrf_token')}
+      });
+      const j = await r.json();
+      if (j.ok){
+        success.innerHTML = '✅ 預留成功！<br>取貨碼：<strong style="font-size:1.6rem">' + j.code + '</strong><br>'
+          + '商品：' + j.product_name + ' × ' + j.quantity + '<br>'
+          + '請於 ' + j.expires_at + ' 前到店報碼取貨';
+        success.hidden = false;
+        form.hidden = true;
+      } else {
+        success.innerHTML = '❌ ' + (j.error || '預留失敗');
+        success.hidden = false;
+      }
+    }catch(err){
+      success.innerHTML = '❌ 無法連線，請稍後重試';
+      success.hidden = false;
+    }
+  });
+})();
+</script>
+
+<style>
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-box{background:var(--surface);color:var(--ink);border-radius:14px;padding:20px;max-width:420px;width:100%;position:relative;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.modal-close{position:absolute;top:8px;right:10px;background:transparent;border:none;font-size:1.6rem;cursor:pointer;color:var(--muted)}
+.reserve-success{padding:12px;border-radius:10px;background:#e8f6ec;color:#205a31;margin-bottom:10px}
+html.dark .reserve-success{background:rgba(58,165,92,.18);color:#9bdcb1}
+.light-btn{cursor:pointer;text-align:left;font-family:inherit}
+.light-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+</style>
 {% endblock %}

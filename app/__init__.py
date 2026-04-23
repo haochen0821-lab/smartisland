@@ -23,6 +23,8 @@ def create_app():
 
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
     os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'pwa'), exist_ok=True)
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'products'), exist_ok=True)
+    app.config['DEMO_MODE'] = os.getenv('DEMO_MODE', 'true').lower() == 'true'
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -56,12 +58,16 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
     from app.routes.pwa import pwa_bp
+    from app.routes.reservations import reservations_bp
+    from app.routes.tag import tag_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(combos_bp, url_prefix='/combos')
     app.register_blueprint(orders_bp, url_prefix='/orders')
+    app.register_blueprint(reservations_bp, url_prefix='/reserve')
     app.register_blueprint(board_bp)
+    app.register_blueprint(tag_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(pwa_bp)
@@ -70,6 +76,8 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        from app.utils.migrations import ensure_columns
+        ensure_columns()
         from app.seed import seed_defaults
         seed_defaults()
 

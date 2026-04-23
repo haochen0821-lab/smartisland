@@ -10,7 +10,10 @@
     <a href="{{ url_for('admin.ferries') }}" class="{{ 'active' if p.startswith('/admin/ferries') }}">🚢 船班</a>
     <a href="{{ url_for('admin.weather') }}" class="{{ 'active' if p.startswith('/admin/weather') }}">🌤️ 天氣</a>
     <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if p.startswith('/admin/orders') }}">📋 訂單</a>
-    <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if p.startswith('/admin/customers') }}">👥 顧客</a>
+    <a href="{{ url_for('admin.reservations') }}" class="{{ 'active' if p.startswith('/admin/reservations') }}">📌 預留商品</a>
+    <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if p.startswith('/admin/customers') }}">👥 會員管理</a>
+    <a href="{{ url_for('admin.sources') }}" class="{{ 'active' if p.startswith('/admin/sources') }}">🔌 資料來源</a>
+    <a href="{{ url_for('admin.external') }}" class="{{ 'active' if p.startswith('/admin/external') }}">🌊 離島實時情報</a>
     <a href="{{ url_for('admin.store') }}" class="{{ 'active' if p.startswith('/admin/store') }}">🏪 店家資訊</a>
     <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if p.startswith('/admin/settings') }}">⚙️ 設定 / PWA</a>
     <hr style="border:0;border-top:1px solid var(--line);margin:10px 0">
