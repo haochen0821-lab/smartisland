@@ -82,14 +82,6 @@
   </div>
 </div>
 
-{% if demo_mode %}
-  <div class="card" style="background:linear-gradient(90deg,#fff3df,#fde9c8);border:1px solid #e9c98c">
-    <strong>🧪 測試模式</strong>　目前處於 DEMO_MODE，可
-    <a class="btn small" href="{{ url_for('admin.demo_enter') }}">🛠️ 一鍵進入後台</a>
-    免登入。正式上線前請於 <code>.env</code> 設 <code>DEMO_MODE=false</code>。
-  </div>
-{% endif %}
-
 {% if weather_alert %}
   <div class="card" style="border-left:6px solid var(--red)">
     <strong>⚠️ 天候警示：</strong>
@@ -97,54 +89,6 @@
   </div>
 {% endif %}
 
-<section class="card" style="border-left:6px solid var(--teal)">
-  <h2 style="margin-top:0">🌊 離島實時情報</h2>
-  <p class="muted small">第三方公開資料，每 30 分鐘更新一次。最後更新：{{ external.fetched_at.strftime('%H:%M') if external.fetched_at else '—' }}</p>
-
-  <div class="row">
-    <div style="flex:1 1 240px">
-      <h4 style="margin:0 0 6px">✈️ 鄰近機場觀測（METAR）</h4>
-      <p class="small muted">{{ external.metar.note }}</p>
-      {% for s in external.metar.stations %}
-        <div style="margin-bottom:6px">
-          <strong class="small">{{ s.icao }}</strong>
-          <span class="small muted">{{ s.desc }}</span><br>
-          <span class="small">{{ s.human }}</span>
-        </div>
-      {% endfor %}
-    </div>
-    <div style="flex:1 1 240px">
-      <h4 style="margin:0 0 6px">🌊 馬祖海面</h4>
-      {% if external.marine_matsu.error %}
-        <p class="small muted">尚未取得（{{ external.marine_matsu.error }}）<br>
-          <a href="https://www.cwa.gov.tw/V8/C/M/NSea.html" target="_blank">→ 看 CWA 官方</a>
-        </p>
-      {% else %}
-        {% for it in external.marine_matsu.get('items', []) %}
-          <div class="small">{{ it.name }}：{{ it.value }}</div>
-        {% endfor %}
-      {% endif %}
-    </div>
-    <div style="flex:1 1 240px">
-      <h4 style="margin:0 0 6px">⚓ 台灣北部海面</h4>
-      {% if external.marine_north.error %}
-        <p class="small muted">尚未取得（{{ external.marine_north.error }}）<br>
-          <a href="https://www.cwa.gov.tw/V8/C/M/FSea.html" target="_blank">→ 看 CWA 官方</a>
-        </p>
-      {% else %}
-        {% for it in external.marine_north.get('items', []) %}
-          <div class="small">{{ it.name }}：{{ it.value }}</div>
-        {% endfor %}
-      {% endif %}
-    </div>
-  </div>
-
-  <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
-    {% for l in external.links %}
-      <a class="btn ghost small" target="_blank" href="{{ l.url }}">{{ l.icon }} {{ l.name }}</a>
-    {% endfor %}
-  </div>
-</section>
 
 <h2 style="margin-top:24px">📦 物資燈號 <span class="small muted">（點選即可預留商品）</span></h2>
 <div id="signal-cache-info" class="small muted" style="margin-bottom:8px"></div>

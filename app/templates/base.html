@@ -29,6 +29,7 @@
       </a>
       <nav class="site-nav">
         <a href="{{ url_for('main.home') }}">首頁</a>
+        <a href="{{ url_for('info.realtime') }}">實時情報</a>
         <a href="{{ url_for('board.board') }}">看板</a>
         {% if current_user.is_authenticated and is_customer %}
           <a href="{{ url_for('combos.list_combos') }}">我的組合</a>
@@ -36,6 +37,9 @@
           <a href="{{ url_for('auth.logout') }}" class="muted small">登出（{{ current_user.full_name or current_user.username }}）</a>
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="btn ghost">登入 / 註冊</a>
+        {% endif %}
+        {% if demo_mode %}
+          <a href="{{ url_for('admin.demo_enter') }}" class="btn ghost" title="DEMO_MODE 開啟中，可直接進入後台">🛠️ 後台</a>
         {% endif %}
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="切換亮/暗底" title="切換亮/暗底">
           <span id="themeIcon">🌙</span>

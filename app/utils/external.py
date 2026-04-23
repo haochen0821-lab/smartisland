@@ -20,7 +20,7 @@ CWA_API = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore'
 
 EXTERNAL_LINKS = [
     {
-        'name': '馬祖鄉土資訊網',
+        'name': '馬祖資訊網',
         'url': 'https://www.matsu.idv.tw/',
         'desc': '南竿機場能見度 / 雲高 / 地方氣象社群觀測（網友回報資訊）',
         'icon': '🏝️',

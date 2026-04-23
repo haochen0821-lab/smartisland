@@ -60,12 +60,14 @@ def create_app():
     from app.routes.pwa import pwa_bp
     from app.routes.reservations import reservations_bp
     from app.routes.tag import tag_bp
+    from app.routes.info import info_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(combos_bp, url_prefix='/combos')
     app.register_blueprint(orders_bp, url_prefix='/orders')
     app.register_blueprint(reservations_bp, url_prefix='/reserve')
+    app.register_blueprint(info_bp)
     app.register_blueprint(board_bp)
     app.register_blueprint(tag_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')

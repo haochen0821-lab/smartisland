@@ -2,7 +2,6 @@ from datetime import date
 from flask import Blueprint, render_template
 from app.models import Product, Category, FerrySchedule
 from app.utils.signal import compute_context
-from app.utils.external import fetch_all as fetch_external
 
 main_bp = Blueprint('main', __name__)
 
@@ -26,13 +25,10 @@ def home():
         FerrySchedule.scheduled_time
     ).all()
 
-    external = fetch_external()
-
     return render_template(
         'home.html',
         grouped=grouped,
         ferries=today_ferries,
         weather=ctx['weather'],
         weather_alert=ctx['weather_alert'],
-        external=external,
     )
