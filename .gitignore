@@ -9,3 +9,8 @@ app/static/uploads/pwa/favicon-*.png
 .venv/
 *.log
 .DS_Store
+instance/
+data/
+database/
+*.db
+*.sqlite3
