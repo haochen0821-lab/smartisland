@@ -60,3 +60,4 @@ GitHub Actions 會自動部署到 VPS（secrets: VPS_HOST / VPS_USER / VPS_SSH_K
 3. 寫入 `/opt/smartisland/.env` 的 `CWA_API_KEY=...`
 4. `docker compose up -d` 重啟容器
 5. 後台「天氣」→「立刻更新」即可拉取
+
